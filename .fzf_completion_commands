@@ -1,0 +1,32 @@
+_fzf_complete_path_spec()
+{
+    word=${COMP_WORDS[$COMP_CWORD]}
+    _fzf_complete --multi --reverse -- < <(git ls-files --exclude-standard -- "*$word*")
+}
+
+_fzf_complete_changes()
+{
+    word=${COMP_WORDS[$COMP_CWORD]}
+    _fzf_complete --multi --reverse -- < <(git ls-files --modified --others --exclude-standard -- "*$word*")
+}
+
+_fzf_complete_branch()
+{
+    word=${COMP_WORDS[$COMP_CWORD]}
+    _fzf_complete --multi --reverse -- < <(git branch -a --format='%(refname:short)' --list "*$word*")
+}
+
+_fzf_complete_git()
+{
+    if echo "$COMP_LINE" | grep -q " -- "; then
+        _fzf_complete_path_spec
+    elif echo "$COMP_LINE" | grep -q "git rm "; then
+        _fzf_complete_path_spec
+    elif echo "$COMP_LINE" | grep -q "git add "; then
+        _fzf_complete_changes
+    elif echo "$COMP_LINE" | grep -qE "git (branch|checkout|diff|fetch|log|merge|rebase|show) "; then
+        _fzf_complete_branch
+    fi
+}
+
+complete -o nospace -F _fzf_complete_git -o default -o bashdefault git
